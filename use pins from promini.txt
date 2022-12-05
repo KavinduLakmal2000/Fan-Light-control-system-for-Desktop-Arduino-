@@ -1,0 +1,14 @@
+13 - loop 
+12 - fan on or off
+
+
+undefined
+
+exhaust fan gate
+intake fan gate
+
+WS2812 connect - 4
+lm35 (temp sensor) 
+
+exhaust fan speed
+intake fan speed
