@@ -1,236 +1,322 @@
 #include "FastLED.h"
-#define NUM_LEDS 60
+
+#define NUM_LEDS 44 //60
 CRGB leds[NUM_LEDS];
 #define PIN 4
 
-float temp;
-const int exhaust_fan = 6;
-const int intake_fan = 5;
+int temp;
+const int exhaust_fan = 5;
+const int intake_fan = 6;
+
+int count1 = 0;
+int count2 = 0;
+int count3 = 0;
+int count4 = 0;
+unsigned long start_time;
+int rpm_intake1;
+int rpm_intake2;
+
+int rpm_exhaust1;
+int rpm_exhaust2;
+
+void counter1(){
+  count1++; 
+}
+void counter2(){
+  count2++; 
+}
+void counter3(){
+  count3++; 
+}
+void counter4(){
+  count4++; 
+}
+
+int serialData;
+
+boolean lights = true;
+boolean standby = false;
+boolean allMax = false;
+boolean HighSpeed = false;
+
+int SetFan1 = 0;
+int SetFan2 = 0;
+
+int LightColor = 0;
+
+int HighSpeedCount = 0;
+int C = 0;
+///////////////////////////////////////////// ws2812 setup ///////////////////////////////////////
+void setAll(byte red, byte green, byte blue) {
+  for(int i = 0; i < NUM_LEDS; i++ ) {
+    setPixel(i, red, green, blue);
+  }
+  showStrip();
+}
+
+void showStrip() {
+ #ifdef ADAFRUIT_NEOPIXEL_H
+   // NeoPixel
+   strip.show();
+ #endif
+ #ifndef ADAFRUIT_NEOPIXEL_H
+   // FastLED
+   FastLED.show();
+ #endif
+}
+
+void setPixel(int Pixel, byte red, byte green, byte blue) {
+ #ifdef ADAFRUIT_NEOPIXEL_H
+   // NeoPixel
+   strip.setPixelColor(Pixel, strip.Color(red, green, blue));
+ #endif
+ #ifndef ADAFRUIT_NEOPIXEL_H
+   // FastLED
+   leds[Pixel].r = red;
+   leds[Pixel].g = green;
+   leds[Pixel].b = blue;
+ #endif
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void setup()
 {
+  Serial.begin(9600);
+  
   FastLED.addLeds<WS2811, PIN, GRB>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
+
+  attachInterrupt(digitalPinToInterrupt(2), counter1, RISING);
+  attachInterrupt(digitalPinToInterrupt(3), counter2, RISING);
+
+  attachInterrupt(digitalPinToInterrupt(8), counter3, RISING);
+  attachInterrupt(digitalPinToInterrupt(9), counter4, RISING);
   
   pinMode(exhaust_fan, OUTPUT);
   pinMode(intake_fan, OUTPUT);
+  
+ digitalWrite(exhaust_fan, HIGH);
+ digitalWrite(intake_fan, HIGH);
+ 
+ CylonBounce(0xFF, 0xFF, 0x0, 2, 60, 70);
+ colorFill(0xFF, 0xE4, 0xC4, 80);
+ 
 
-  digitalWrite(exhaust_fan, LOW);
-  digitalWrite(intake_fan, LOW);
+ while(Out_FanRpm1() < 800 || Out_FanRpm1() > 2000){ // check ex1 fan
+  Strobe(0xFF, 0x0, 0x0, 10, 50, 1000);
+ }
+ while(Out_FanRpm2() < 800 || Out_FanRpm2() > 2000){ // check ex2 fan
+  Strobe(0xFF, 0x0, 0x0, 10, 50, 1000);
+ }
+ // ==================================================================unlock after all done==========================
+ /*
+ while(In_FanRpm1() < 800 || In_FanRpm1() > 2000){ // check in2 fan
+  Strobe(0xFF, 0x0, 0x0, 10, 50, 1000);
+ }
+ while(In_FanRpm2() < 800 || In_FanRpm2() > 2000){ // check in2 fan
+  Strobe(0xFF, 0x0, 0x0, 10, 50, 1000);
+ }
+ */
+       
+   colorFill(0x70, 0x80, 0x90, 80);
+   
+   digitalWrite(exhaust_fan, LOW);
+   digitalWrite(intake_fan, LOW);
+   
+   colorFill(0x0, 0xFF, 0xFF, 80); 
+   colorWipe(0x0, 0x0, 0x0, 50);
+
+  while (!Serial){ // check connection
+  FadeInOut(0xFF, 0xFF, 0xFF);
+  analogWrite(exhaust_fan, 120);
+  analogWrite(intake_fan, 120);
+  digitalWrite(13,LOW);
+  delay (100);
+  digitalWrite(13,HIGH);
+  delay(100);
+}
+
+  FastLED.clear();
+  FastLED.show();
   
 }
 
 
 void loop() {
 
+LIGHTS();
+SdataRead();
 
-temp = float (analogRead(A0)) * 500.0 / 1024.0;
-Serial.print(temp);
+digitalWrite(13,LOW);
 
-if (temp <= '40'){
-  analogWrite(exhaust_fan, 0);
-  analogWrite(intake_fan, 0); // speed 0%
-}
+   if (serialData == 115){ // s
+    standby = true;
+   }
 
-else if(temp <= '45'){
-  analogWrite(exhaust_fan, 51);
-  analogWrite(intake_fan, 0);
-}
-
-else if (temp <= '50'){
-  analogWrite(exhaust_fan, 51);
-  analogWrite(intake_fan, 51); // speed 20%
-}
-
-else if (temp <= '60'){
-   analogWrite(exhaust_fan, 153);
-  analogWrite(intake_fan, 153); // speed 60%
-}
-
-else if (temp <= '68'){
-   analogWrite(exhaust_fan, 255);
-   analogWrite(intake_fan, 255); // speed 100%
-}
-
-
-
-  //=================================================lighting system ===================================================
-  //Strobe(0xff, 0xff, 0xff, 10, 50, 1000);
- // CylonBounce(0xff, 0, 0, 4, 10, 50);
- //SnowSparkle(0x10, 0x10, 0x10, 20, random(100,1000));
-
- 
-   //colorWipe(0x00,0xff,0x00, 50);
-   //colorWipe(0x00,0x00,0x00, 50);
-   //rainbowCycle(20);
-   //Fire(55,120,15);
-
-   meteorRain(0xff,0xff,0xff,15, 40, false, 23);
-}
-
-
-//=====================================================================================================================================
-void meteorRain(byte red, byte green, byte blue, byte meteorSize, byte meteorTrailDecay, boolean meteorRandomDecay, int SpeedDelay) {  
-  setAll(0,0,0);
- 
-  for(int i = 0; i < NUM_LEDS+NUM_LEDS; i++) {
+   if(serialData == 108){ // l
+    lights = false;
+   }
    
-   
-    // fade brightness all LEDs one step
-    for(int j=0; j<NUM_LEDS; j++) {
-      if( (!meteorRandomDecay) || (random(10)>5) ) {
-        fadeToBlack(j, meteorTrailDecay );        
-      }
-    }
-   
-    // draw meteor
-    for(int j = 0; j < meteorSize; j++) {
-      if( ( i-j <NUM_LEDS) && (i-j>=0) ) {
-        setPixel(i-j, red, green, blue);
-      }
-    }
-   
-    showStrip();
-    delay(SpeedDelay);
+   if(serialData == 103){ // g
+    lights = true;
+   }
+
+//==============================All fans max speed===============================
+if (serialData == 104){ // h
+allMax = true;
+}
+
+while (allMax){
+ SdataRead();
+  
+ digitalWrite(exhaust_fan, HIGH);
+ digitalWrite(intake_fan, HIGH);
+
+
+
+ if(serialData == 109){ //m
+ digitalWrite(exhaust_fan, LOW);
+ digitalWrite(intake_fan, LOW);
+  allMax = false;
+ }
+
+    digitalWrite(13,HIGH);
+    delay(500);
+    digitalWrite(13,LOW);
+    delay(100);
+ meteorRain(0xFF, 0x0, 0x0,20, 80, false, 10);
+}
+//================================standby=============
+   while(standby){
+   SdataRead();
+   FadeInOut(0xFF, 0xFF, 0xFF);
+   if (serialData == 106){ // j
+    standby = false;
+   } 
+
+    digitalWrite(13,HIGH);
+    delay(500);
+    digitalWrite(13,LOW);
+    delay(100);
+    
+   }  
+//=================================================== speed send 
+  //Serial.println(In_FanRpm1());
+  Serial.println(Out_FanRpm1());
+
+
+if (serialData == 0){
+  temp = 49;
+}
+
+else if (serialData < 100){
+  temp = serialData;
+}
+
+SetFan1 = map (temp , 48 , 75 , 50 , 255); // zz , xx , xx , yy , yy (x are temp reange and y are fan speed)
+
+SetFan2 = map (temp , 52 , 75 , 47 , 255);
+
+LightColor = map(temp, 47, 75, 1, 4);
+
+
+if (SetFan1 > 50){
+  analogWrite(intake_fan, SetFan1);
+}
+else{
+  digitalWrite(intake_fan, LOW);
+}
+
+if(SetFan2 > 50){
+  analogWrite(exhaust_fan, SetFan2);
+}
+else{
+   digitalWrite(exhaust_fan, LOW);
+}
+////////////////////////////////////////////////////////////auto high speed/////////////////////////////////////
+
+// ====================================================================lights with temp ===============================================
+
+
+digitalWrite(13,HIGH);
+delay(200);
+
+
+  FastLED.clear();
+  FastLED.show();
+
+  
+} //============================================================ loop end
+
+// ================================================================ lights call =================================================
+void LIGHTS(){
+if(lights){
+
+if(LightColor == 1){
+  meteorRain(0xFF, 0xFF, 0xFF,20, 80, false, 50); // white
+}
+
+else if (LightColor == 2){
+  meteorRain(0x0, 0xFF, 0xFF,20, 80, false, 30); //aqua 
+}
+
+else if (LightColor == 3){ 
+  meteorRain(0xFF, 0xD7, 0x0,20, 100, false, 20); //yellow
+}
+
+else if (LightColor == 4){
+  meteorRain(0xFF, 0x0, 0x0,20, 80, false, 10); //red  
+}
+
+}
+
+else {
+  FastLED.clear();
+  FastLED.show(); 
+  delay(100);
+}
+}
+// ================================================================ serial store ================================================
+void SdataRead(){        
+    if (Serial.available() > 0){
+      serialData  = Serial.parseInt();  
+ } 
+}
+//=======================================================fan RPM read=================================================================
+void Millis(){
+  start_time = millis();
+  count1 = 0;
+  count2 = 0;
+  while((millis() - start_time) <1000){
+    
   }
 }
 
-void fadeToBlack(int ledNo, byte fadeValue) {
- #ifdef ADAFRUIT_NEOPIXEL_H
-    // NeoPixel
-    uint32_t oldColor;
-    uint8_t r, g, b;
-    int value;
-   
-    oldColor = strip.getPixelColor(ledNo);
-    r = (oldColor & 0x00ff0000UL) >> 16;
-    g = (oldColor & 0x0000ff00UL) >> 8;
-    b = (oldColor & 0x000000ffUL);
-
-    r=(r<=10)? 0 : (int) r-(r*fadeValue/256);
-    g=(g<=10)? 0 : (int) g-(g*fadeValue/256);
-    b=(b<=10)? 0 : (int) b-(b*fadeValue/256);
-   
-    strip.setPixelColor(ledNo, r,g,b);
- #endif
- #ifndef ADAFRUIT_NEOPIXEL_H
-   // FastLED
-   leds[ledNo].fadeToBlackBy( fadeValue );
- #endif  
-}
-//=======================================================================================================================================
-void Fire(int Cooling, int Sparking, int SpeedDelay) {
-  static byte heat[NUM_LEDS];
-  int cooldown;
- 
-  // Step 1.  Cool down every cell a little
-  for( int i = 0; i < NUM_LEDS; i++) {
-    cooldown = random(0, ((Cooling * 10) / NUM_LEDS) + 2);
-   
-    if(cooldown>heat[i]) {
-      heat[i]=0;
-    } else {
-      heat[i]=heat[i]-cooldown;
-    }
-  }
- 
-  // Step 2.  Heat from each cell drifts 'up' and diffuses a little
-  for( int k= NUM_LEDS - 1; k >= 2; k--) {
-    heat[k] = (heat[k - 1] + heat[k - 2] + heat[k - 2]) / 3;
-  }
-   
-  // Step 3.  Randomly ignite new 'sparks' near the bottom
-  if( random(255) < Sparking ) {
-    int y = random(7);
-    heat[y] = heat[y] + random(160,255);
-    //heat[y] = random(160,255);
-  }
-
-  // Step 4.  Convert heat to LED colors
-  for( int j = 0; j < NUM_LEDS; j++) {
-    setPixelHeatColor(j, heat[j] );
-  }
-
-  showStrip();
-  delay(SpeedDelay);
+int In_FanRpm1(){
+  Millis();
+  rpm_intake1 = count3 * 60 / 2;
+  return rpm_intake1;
 }
 
-void setPixelHeatColor (int Pixel, byte temperature) {
-  // Scale 'heat' down from 0-255 to 0-191
-  byte t192 = round((temperature/255.0)*191);
- 
-  // calculate ramp up from
-  byte heatramp = t192 & 0x3F; // 0..63
-  heatramp <<= 2; // scale up to 0..252
- 
-  // figure out which third of the spectrum we're in:
-  if( t192 > 0x80) {                     // hottest
-    setPixel(Pixel, 255, 255, heatramp);
-  } else if( t192 > 0x40 ) {             // middle
-    setPixel(Pixel, 255, heatramp, 0);
-  } else {                               // coolest
-    setPixel(Pixel, heatramp, 0, 0);
-  }
+int In_FanRpm2(){
+  Millis();
+  rpm_intake2 = count4 * 60 / 2;
+  return rpm_intake2;
 }
 
-//=========================================================================================================================================
-void rainbowCycle(int SpeedDelay) {
-  byte *c;
-  uint16_t i, j;
-
-  for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
-    for(i=0; i< NUM_LEDS; i++) {
-      c=Wheel(((i * 256 / NUM_LEDS) + j) & 255);
-      setPixel(i, *c, *(c+1), *(c+2));
-    }
-    showStrip();
-    delay(SpeedDelay);
-  }
+int Out_FanRpm2(){
+  Millis();
+  rpm_exhaust2 = count2 * 60 / 2;
+  return rpm_exhaust2;
 }
 
-byte * Wheel(byte WheelPos) {
-  static byte c[3];
- 
-  if(WheelPos < 85) {
-   c[0]=WheelPos * 3;
-   c[1]=255 - WheelPos * 3;
-   c[2]=0;
-  } else if(WheelPos < 170) {
-   WheelPos -= 85;
-   c[0]=255 - WheelPos * 3;
-   c[1]=0;
-   c[2]=WheelPos * 3;
-  } else {
-   WheelPos -= 170;
-   c[0]=0;
-   c[1]=WheelPos * 3;
-   c[2]=255 - WheelPos * 3;
-  }
-
-  return c;
-}
-//=====================================================================================================================
-void colorWipe(byte red, byte green, byte blue, int SpeedDelay) {
-  for(uint16_t i=0; i<NUM_LEDS; i++) {
-      setPixel(i, red, green, blue);
-      showStrip();
-      delay(SpeedDelay);
-  }
-}
-//===============================================================================================================================
-
-void SnowSparkle(byte red, byte green, byte blue, int SparkleDelay, int SpeedDelay) {
-  setAll(red,green,blue);
- 
-  int Pixel = random(NUM_LEDS);
-  setPixel(Pixel,0xff,0xff,0xff);
-  showStrip();
-  delay(SparkleDelay);
-  setPixel(Pixel,red,green,blue);
-  showStrip();
-  delay(SpeedDelay);
+int Out_FanRpm1(){
+  Millis();
+  rpm_exhaust1 = count1 * 60 / 2;
+  return rpm_exhaust1;
 }
 
 //=======================================================================================================
+
 void CylonBounce(byte red, byte green, byte blue, int EyeSize, int SpeedDelay, int ReturnDelay){
 
   for(int i = 0; i < NUM_LEDS-EyeSize-2; i++) {
@@ -260,6 +346,97 @@ void CylonBounce(byte red, byte green, byte blue, int EyeSize, int SpeedDelay, i
   delay(ReturnDelay);
 }
 
+//======================================================================================================================================
+void FadeInOut(byte red, byte green, byte blue){
+  float r, g, b;
+     
+  for(int k = 0; k < 256; k=k+1) {
+    r = (k/256.0)*red;
+    g = (k/256.0)*green;
+    b = (k/256.0)*blue;
+    setAll(r,g,b);
+    showStrip();
+  }
+     
+  for(int k = 255; k >= 0; k=k-2) {
+    r = (k/256.0)*red;
+    g = (k/256.0)*green;
+    b = (k/256.0)*blue;
+    setAll(r,g,b);
+    showStrip();
+  }
+}
+
+
+
+//=====================================================================================================================================
+void meteorRain(byte red, byte green, byte blue, byte meteorSize, byte meteorTrailDecay, boolean meteorRandomDecay, int SpeedDelay) {  
+  setAll(0,0,0);
+ 
+  for(int i = 0; i < NUM_LEDS+NUM_LEDS; i++) {
+   
+    // fade brightness all LEDs one step
+    for(int j=0; j<NUM_LEDS; j++) {
+      if( (!meteorRandomDecay) || (random(10)>5) ) {
+        fadeToBlack(j, meteorTrailDecay );        
+      }
+    }
+
+    // draw meteor
+    for(int j = 0; j < meteorSize; j++) {
+      if( ( i-j <NUM_LEDS) && (i-j>=0) ) {
+        setPixel(i-j, red, green, blue);
+      }
+    }
+   
+    showStrip();
+    delay(SpeedDelay);
+  }
+}
+
+void fadeToBlack(int ledNo, byte fadeValue) {
+ #ifdef ADAFRUIT_NEOPIXEL_H
+    // NeoPixel
+    uint32_t oldColor;
+    uint8_t r, g, b;
+    int value;
+   
+    oldColor = strip.getPixelColor(ledNo);
+    r = (oldColor & 0x00ff0000UL) >> 16;
+    g = (oldColor & 0x0000ff00UL) >> 8;
+    b = (oldColor & 0x000000ffUL);
+
+    r=(r<=10)? 0 : (int) r-(r*fadeValue/256);
+    g=(g<=10)? 0 : (int) g-(g*fadeValue/256);
+    b=(b<=10)? 0 : (int) b-(b*fadeValue/256);
+
+    strip.setPixelColor(ledNo, r,g,b);
+    
+ #endif
+ #ifndef ADAFRUIT_NEOPIXEL_H
+   // FastLED
+   leds[ledNo].fadeToBlackBy( fadeValue );
+ #endif  
+ 
+}
+
+//=====================================================================================================================
+void colorFill(byte red, byte green, byte blue, int SpeedDelay) {
+  for(uint16_t i=0; i<NUM_LEDS; i++) {
+      setPixel(i, red, green, blue);
+      showStrip();
+      delay(SpeedDelay);
+  }
+}
+
+void colorWipe(byte red, byte green, byte blue, int SpeedDelay) {
+  for(uint16_t i=NUM_LEDS; i>0; i--) {
+      setPixel(i, red, green, blue);
+      showStrip();
+      delay(SpeedDelay);
+  }
+}
+
 //==========================================================================================================================
 void Strobe(byte red, byte green, byte blue, int StrobeCount, int FlashDelay, int EndPause){
   for(int j = 0; j < StrobeCount; j++) {
@@ -272,36 +449,4 @@ void Strobe(byte red, byte green, byte blue, int StrobeCount, int FlashDelay, in
   }
  
  delay(EndPause);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void showStrip() {
- #ifdef ADAFRUIT_NEOPIXEL_H
-   // NeoPixel
-   strip.show();
- #endif
- #ifndef ADAFRUIT_NEOPIXEL_H
-   // FastLED
-   FastLED.show();
- #endif
-}
-
-void setPixel(int Pixel, byte red, byte green, byte blue) {
- #ifdef ADAFRUIT_NEOPIXEL_H
-   // NeoPixel
-   strip.setPixelColor(Pixel, strip.Color(red, green, blue));
- #endif
- #ifndef ADAFRUIT_NEOPIXEL_H
-   // FastLED
-   leds[Pixel].r = red;
-   leds[Pixel].g = green;
-   leds[Pixel].b = blue;
- #endif
-}
-
-void setAll(byte red, byte green, byte blue) {
-  for(int i = 0; i < NUM_LEDS; i++ ) {
-    setPixel(i, red, green, blue);
-  }
-  showStrip();
 }
