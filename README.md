@@ -7,6 +7,7 @@ so this device can automatically control chassis fans and RGB lights according t
  - overheat protection
  - Fan failer checking system
  - automatic or manual control system
+ - Fan RPM check
  - RGB lighting patterns
 
 
