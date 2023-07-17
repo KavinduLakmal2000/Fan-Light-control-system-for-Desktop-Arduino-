@@ -1,4 +1,4 @@
-# Fan-Light-control-system-for-Desktop-Arduino-
+# Smart_Fans
 
 for this project mainly I'm using an LM35 temp sensor, z44 mosfet, and Arduino Pro mini
 In old computers don't have any driver or software to control the desktop chassis fan.
