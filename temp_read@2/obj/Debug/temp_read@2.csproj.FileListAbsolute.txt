@@ -1,0 +1,17 @@
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\bin\Debug\temp_read@2.exe.config
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\bin\Debug\temp_read@2.exe
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\bin\Debug\temp_read@2.pdb
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\obj\Debug\temp_read@2.csproj.AssemblyReference.cache
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\obj\Debug\temp_read@2.csproj.SuggestedBindingRedirects.cache
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\obj\Debug\temp_read_2.Form1.resources
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\obj\Debug\temp_read_2.Properties.Resources.resources
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\obj\Debug\temp_read@2.csproj.GenerateResource.cache
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\obj\Debug\temp_read@2.csproj.CoreCompileInputs.cache
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\obj\Debug\temp_read@2.csproj.CopyComplete
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\obj\Debug\temp_read@2.exe
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\obj\Debug\temp_read@2.pdb
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\bin\Debug\Bunifu_UI_v1.5.3.dll
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\bin\Debug\temp_read@2.exe.manifest
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\bin\Debug\temp_read@2.application
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\obj\Debug\temp_read@2.exe.manifest
+C:\Users\LUCKY\source\repos\temp_read@2\temp_read@2\obj\Debug\temp_read@2.application
